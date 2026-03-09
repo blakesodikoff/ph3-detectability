@@ -183,3 +183,15 @@ input[type="number"] {
     opacity: 0.8;
     margin-top: 5px;
 }
+#heatmapCanvas {
+    width: 100%;
+    max-width: 900px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    margin-top: 15px;
+    display: block;
+}
+
+.card p {
+    line-height: 1.5;
+}
