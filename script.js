@@ -181,7 +181,7 @@ function drawPlot(ppbValues, snrValues, thresholdPpb, inputPpb, inputSnr) {
   ctx.font = "bold 16px Inter, sans-serif";
   ctx.fillText("PH₃ Detectability in Venus-Analog Atmospheres", padding.left, 18);
 }
-function drawHeatmap(throughput, exposure, radius) {
+function drawHeatmap(throughput, exposure, radius, currentDistance, currentDiameter) {
   const canvas = document.getElementById("heatmapCanvas");
   if (!canvas) return;
 
@@ -299,6 +299,22 @@ function drawHeatmap(throughput, exposure, radius) {
   ctx.font = "bold 16px Inter, sans-serif";
   ctx.fillText("PH₃ 5σ Detectability Threshold Heatmap", padding.left, 22);
 
+  // Current selection marker
+  const markerX = padding.left + ((currentDistance - 2) / (50 - 2)) * plotWidth;
+  const markerY = height - padding.bottom - ((currentDiameter - 2) / (40 - 2)) * plotHeight;
+
+  ctx.beginPath();
+  ctx.arc(markerX, markerY, 6, 0, 2 * Math.PI);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#000000";
+  ctx.stroke();
+
+  ctx.font = "12px Inter, sans-serif";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("Current selection", markerX + 10, markerY - 10);
+  
   // Color bar
   const barX = width - 42;
   const barY = padding.top;
@@ -319,6 +335,14 @@ function drawHeatmap(throughput, exposure, radius) {
   ctx.font = "12px Inter, sans-serif";
   ctx.fillText(`${maxVal.toFixed(0)} ppb`, barX - 10, barY - 8);
   ctx.fillText(`${minVal.toFixed(0)} ppb`, barX - 10, barY + barH + 18);
+  
+  ctx.save();
+  ctx.translate(barX + 42, barY + barH / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.font = "12px Inter, sans-serif";
+  ctx.fillStyle = "#e9eefc";
+  ctx.fillText("PH₃ Threshold (ppb)", 0, 0);
+  ctx.restore();
 }
 function updateAll() {
   const inputs = getInputs();
@@ -349,8 +373,13 @@ function updateAll() {
   }
 
   drawPlot(ppbValues, snrValues, result.ph3ThresholdPpb, inputs.ph3, result.snrAtInputPpb);
-  drawHeatmap(inputs.throughput, inputs.exposure, inputs.radius);
-
+  drawHeatmap(
+    inputs.throughput,
+    inputs.exposure,
+    inputs.radius,
+    inputs.distance,
+    inputs.diameter
+  );
 }
 
 updateAll();
