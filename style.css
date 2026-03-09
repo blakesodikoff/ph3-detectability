@@ -178,3 +178,8 @@ input[type="number"] {
     grid-template-columns: 1fr;
   }
 }
+.author {
+    font-size: 18px;
+    opacity: 0.8;
+    margin-top: 5px;
+}
