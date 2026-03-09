@@ -181,7 +181,145 @@ function drawPlot(ppbValues, snrValues, thresholdPpb, inputPpb, inputSnr) {
   ctx.font = "bold 16px Inter, sans-serif";
   ctx.fillText("PH₃ Detectability in Venus-Analog Atmospheres", padding.left, 18);
 }
+function drawHeatmap(throughput, exposure, radius) {
+  const canvas = document.getElementById("heatmapCanvas");
+  if (!canvas) return;
 
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+
+  ctx.clearRect(0, 0, width, height);
+
+  const padding = { left: 80, right: 70, top: 35, bottom: 60 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+
+  const distances = [];
+  const diameters = [];
+
+  for (let d = 2; d <= 50; d += 1) distances.push(d);
+  for (let D = 2; D <= 40; D += 1) diameters.push(D);
+
+  const values = [];
+  let minVal = Infinity;
+  let maxVal = -Infinity;
+
+  for (let j = 0; j < diameters.length; j++) {
+    const row = [];
+    for (let i = 0; i < distances.length; i++) {
+      const result = ph3Detectability(
+        diameters[j],
+        throughput,
+        exposure,
+        distances[i],
+        radius,
+        null
+      );
+      const threshold = result.ph3ThresholdPpb;
+      row.push(threshold);
+
+      if (threshold < minVal) minVal = threshold;
+      if (threshold > maxVal) maxVal = threshold;
+    }
+    values.push(row);
+  }
+
+  function getColor(value) {
+    const t = (value - minVal) / (maxVal - minVal || 1);
+
+    const r = Math.floor(255 * Math.min(1, Math.max(0, 2 * t)));
+    const g = Math.floor(255 * (1 - Math.abs(t - 0.5) * 2));
+    const b = Math.floor(255 * (1 - t));
+
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  const cellWidth = plotWidth / distances.length;
+  const cellHeight = plotHeight / diameters.length;
+
+  for (let j = 0; j < diameters.length; j++) {
+    for (let i = 0; i < distances.length; i++) {
+      const x = padding.left + i * cellWidth;
+      const y = padding.top + (diameters.length - 1 - j) * cellHeight;
+
+      ctx.fillStyle = getColor(values[j][i]);
+      ctx.fillRect(x, y, cellWidth + 0.5, cellHeight + 0.5);
+    }
+  }
+
+  // Axes
+  ctx.strokeStyle = "#d6defa";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(padding.left, padding.top);
+  ctx.lineTo(padding.left, height - padding.bottom);
+  ctx.lineTo(width - padding.right, height - padding.bottom);
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = "#e9eefc";
+  ctx.font = "13px Inter, sans-serif";
+  ctx.fillText("Distance (pc)", width / 2 - 35, height - 15);
+
+  ctx.save();
+  ctx.translate(22, height / 2 + 25);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText("Telescope Diameter (m)", 0, 0);
+  ctx.restore();
+
+  // X ticks
+  ctx.font = "12px Inter, sans-serif";
+  for (let d = 10; d <= 50; d += 10) {
+    const frac = (d - 2) / (50 - 2);
+    const x = padding.left + frac * plotWidth;
+
+    ctx.beginPath();
+    ctx.moveTo(x, height - padding.bottom);
+    ctx.lineTo(x, height - padding.bottom + 6);
+    ctx.stroke();
+
+    ctx.fillText(String(d), x - 8, height - padding.bottom + 22);
+  }
+
+  // Y ticks
+  for (let D = 10; D <= 40; D += 10) {
+    const frac = (D - 2) / (40 - 2);
+    const y = height - padding.bottom - frac * plotHeight;
+
+    ctx.beginPath();
+    ctx.moveTo(padding.left - 6, y);
+    ctx.lineTo(padding.left, y);
+    ctx.stroke();
+
+    ctx.fillText(String(D), padding.left - 28, y + 4);
+  }
+
+  // Title
+  ctx.font = "bold 16px Inter, sans-serif";
+  ctx.fillText("PH₃ 5σ Detectability Threshold Heatmap", padding.left, 22);
+
+  // Color bar
+  const barX = width - 42;
+  const barY = padding.top;
+  const barW = 16;
+  const barH = plotHeight;
+
+  for (let k = 0; k < barH; k++) {
+    const frac = 1 - k / barH;
+    const value = minVal + frac * (maxVal - minVal);
+    ctx.fillStyle = getColor(value);
+    ctx.fillRect(barX, barY + k, barW, 1);
+  }
+
+  ctx.strokeStyle = "#d6defa";
+  ctx.strokeRect(barX, barY, barW, barH);
+
+  ctx.fillStyle = "#e9eefc";
+  ctx.font = "12px Inter, sans-serif";
+  ctx.fillText(`${maxVal.toFixed(0)} ppb`, barX - 10, barY - 8);
+  ctx.fillText(`${minVal.toFixed(0)} ppb`, barX - 10, barY + barH + 18);
+}
 function updateAll() {
   const inputs = getInputs();
   const result = ph3Detectability(
@@ -211,6 +349,8 @@ function updateAll() {
   }
 
   drawPlot(ppbValues, snrValues, result.ph3ThresholdPpb, inputs.ph3, result.snrAtInputPpb);
+  drawHeatmap(inputs.throughput, inputs.exposure, inputs.radius);
+
 }
 
 updateAll();
