@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PH₃ Detectability Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <h1>PH₃ Detectability Calculator</h1>
+      <p class="subtitle">Venus-Analog Exoplanet Atmospheres</p>
+      <p class="description">
+        This calculator estimates the minimum detectable phosphine (PH₃) abundance
+        for a Venus-like exoplanet using your calibrated scaling model.
+      </p>
+    </header>
+
+    <main class="grid">
+      <section class="panel inputs">
+        <h2>Input Parameters</h2>
+
+        <div class="control-group">
+          <label for="diameter">Telescope Diameter (m)</label>
+          <input type="range" id="diameter" min="1" max="40" step="0.5" value="6.5" />
+          <input type="number" id="diameterNumber" min="1" max="40" step="0.5" value="6.5" />
+        </div>
+
+        <div class="control-group">
+          <label for="throughput">Throughput</label>
+          <input type="range" id="throughput" min="0.05" max="1" step="0.05" value="0.30" />
+          <input type="number" id="throughputNumber" min="0.05" max="1" step="0.05" value="0.30" />
+        </div>
+
+        <div class="control-group">
+          <label for="exposure">Exposure Time (s)</label>
+          <input type="range" id="exposure" min="1000" max="100000" step="1000" value="10000" />
+          <input type="number" id="exposureNumber" min="1000" max="100000" step="1000" value="10000" />
+        </div>
+
+        <div class="control-group">
+          <label for="distance">Distance (pc)</label>
+          <input type="range" id="distance" min="1" max="50" step="1" value="10" />
+          <input type="number" id="distanceNumber" min="1" max="50" step="1" value="10" />
+        </div>
+
+        <div class="control-group">
+          <label for="radius">Planet Radius (Earth Radii)</label>
+          <input type="range" id="radius" min="0.3" max="3" step="0.05" value="0.95" />
+          <input type="number" id="radiusNumber" min="0.3" max="3" step="0.05" value="0.95" />
+        </div>
+
+        <div class="control-group">
+          <label for="ph3">PH₃ Abundance (ppb)</label>
+          <input type="range" id="ph3" min="1" max="200" step="1" value="96" />
+          <input type="number" id="ph3Number" min="1" max="200" step="1" value="96" />
+        </div>
+      </section>
+
+      <section class="panel results">
+        <h2>Results</h2>
+        <div class="metrics">
+          <div class="metric-card">
+            <div class="metric-label">Minimum Detectable PH₃ at 5σ</div>
+            <div class="metric-value" id="thresholdValue">96.00 ppb</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">SNR at Input PH₃</div>
+            <div class="metric-value" id="snrValue">5.00</div>
+          </div>
+        </div>
+
+        <div id="statusBox" class="status detectable">Detectable at 5σ</div>
+
+        <div class="plot-wrap">
+          <canvas id="plotCanvas" width="820" height="430"></canvas>
+        </div>
+
+        <div class="legend-note">
+          Solid curve: SNR vs PH₃ &nbsp;|&nbsp; Dashed line: 5σ threshold &nbsp;|&nbsp; Dotted line: threshold concentration
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      Built for a Venus-analog PH₃ detectability model calibrated to a 96 ppb threshold at 5σ for a 6.5 m telescope, 30% throughput, 10,000 s exposure, 10 pc distance, and 0.95 Earth-radius planet.
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
